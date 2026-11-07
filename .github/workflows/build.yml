@@ -1,1 +1,45 @@
+name: Build Android APK with C Backend
 
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Compile C and Build APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r25b
+
+      - name: Compile C Backend to Android Shared Library (.so)
+        run: |
+          $ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android33-clang \
+            -shared -fPIC -O2 -o libcrypting.so crypting1.c
+
+      - name: Prepare Entry Point for Buildozer
+        run: |
+          if [ -f "Frontend.py" ] && [ ! -f "main.py" ]; then
+            cp Frontend.py main.py
+          fi
+
+      - name: Build APK via Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
+        with:
+          workdir: .
+          buildozer_version: stable
+
+      - name: Upload Output APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: CipherApp-Android-APK
+          path: ${{ steps.buildozer.outputs.filename }}
