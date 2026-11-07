@@ -15,7 +15,7 @@ from kivy.uix.textinput import TextInput
 Window.clearcolor = (0.01, 0.02, 0.01, 1)
 
 # Inbuilt application password
-INBUILT_PASSWORD = "cyber1995"
+INBUILT_PASSWORD = "30feb"
 
 # ---------------------------------------------------------
 # DIRECT C-BACKEND BINDING VIA CTYPES
