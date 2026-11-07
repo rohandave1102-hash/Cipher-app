@@ -3,6 +3,7 @@ import os
 import sys
 import time
 from kivy.app import App
+from kivy.core.clipboard import Clipboard
 from kivy.core.window import Window
 from kivy.graphics import Color, Rectangle
 from kivy.uix.boxlayout import BoxLayout
@@ -14,7 +15,7 @@ from kivy.uix.textinput import TextInput
 Window.clearcolor = (0.01, 0.02, 0.01, 1)
 
 # Inbuilt application password
-INBUILT_PASSWORD = "30feb"
+INBUILT_PASSWORD = "cyber1995"
 
 # ---------------------------------------------------------
 # DIRECT C-BACKEND BINDING VIA CTYPES
@@ -160,16 +161,16 @@ class DashboardScreen(Screen):
         lbl_title = Label(
             text="[b]◆ ENCRYPTION WORKSTATION ◆[/b]", markup=True,
             font_size='18sp', color=(0.22, 1.0, 0.08, 1),
-            size_hint=(1, None), height=40
+            size_hint=(1, None), height=36
         )
 
         lbl_in = Label(text="INPUT STRING / PLAINTEXT", font_size='11sp', color=(0.65, 0.87, 0.71, 1), size_hint=(1, None), height=20)
         self.txt_in = TextInput(
-            multiline=True, font_size='14sp', size_hint=(1, 0.35),
+            multiline=True, font_size='14sp', size_hint=(1, 0.28),
             background_color=(0.02, 0.09, 0.05, 1), foreground_color=(0.9, 1.0, 0.92, 1)
         )
 
-        btn_row = BoxLayout(size_hint=(1, None), height=45, spacing=15)
+        btn_row = BoxLayout(size_hint=(1, None), height=42, spacing=15)
         btn_enc = Button(text="→ ENCRYPT", bold=True, background_color=(0.07, 0.27, 0.17, 1), color=(0.84, 1.0, 0.88, 1))
         btn_dec = Button(text="← DECRYPT", bold=True, background_color=(0.07, 0.27, 0.17, 1), color=(0.84, 1.0, 0.88, 1))
         btn_enc.bind(on_release=self.do_encrypt)
@@ -179,12 +180,27 @@ class DashboardScreen(Screen):
 
         lbl_out = Label(text="OUTPUT RESULT", font_size='11sp', color=(0.65, 0.87, 0.71, 1), size_hint=(1, None), height=20)
         self.txt_out = TextInput(
-            multiline=True, readonly=True, font_size='14sp', size_hint=(1, 0.35),
+            multiline=True, readonly=True, font_size='14sp', size_hint=(1, 0.28),
             background_color=(0.02, 0.09, 0.05, 1), foreground_color=(0.9, 1.0, 0.92, 1)
         )
 
-        btn_clr = Button(text="CLEAR WORKSPACE", bold=True, size_hint=(1, None), height=42, background_color=(0.07, 0.27, 0.17, 1), color=(0.84, 1.0, 0.88, 1))
+        # Action row with Copy Output and Clear buttons
+        action_row = BoxLayout(size_hint=(1, None), height=40, spacing=15)
+        
+        self.btn_copy = Button(
+            text="COPY OUTPUT", bold=True,
+            background_color=(0.07, 0.27, 0.17, 1), color=(0.84, 1.0, 0.88, 1)
+        )
+        self.btn_copy.bind(on_release=self.copy_output)
+
+        btn_clr = Button(
+            text="CLEAR ALL", bold=True,
+            background_color=(0.07, 0.27, 0.17, 1), color=(0.84, 1.0, 0.88, 1)
+        )
         btn_clr.bind(on_release=self.clear_all)
+
+        action_row.add_widget(self.btn_copy)
+        action_row.add_widget(btn_clr)
 
         layout.add_widget(lbl_title)
         layout.add_widget(lbl_in)
@@ -192,7 +208,7 @@ class DashboardScreen(Screen):
         layout.add_widget(btn_row)
         layout.add_widget(lbl_out)
         layout.add_widget(self.txt_out)
-        layout.add_widget(btn_clr)
+        layout.add_widget(action_row)
 
         self.add_widget(layout)
 
@@ -202,13 +218,21 @@ class DashboardScreen(Screen):
 
     def do_encrypt(self, *args):
         self.txt_out.text = c_encrypt(self.txt_in.text)
+        self.btn_copy.text = "COPY OUTPUT"
 
     def do_decrypt(self, *args):
         self.txt_out.text = c_decrypt(self.txt_in.text)
+        self.btn_copy.text = "COPY OUTPUT"
+
+    def copy_output(self, *args):
+        if self.txt_out.text:
+            Clipboard.copy(self.txt_out.text)
+            self.btn_copy.text = "COPIED! ✓"
 
     def clear_all(self, *args):
         self.txt_in.text = ""
         self.txt_out.text = ""
+        self.btn_copy.text = "COPY OUTPUT"
 
 
 class CipherMatrixApp(App):
